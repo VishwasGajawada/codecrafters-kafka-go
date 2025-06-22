@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+func handleConnection(connection net.Conn) {
+	defer connection.Close()
+	connection.Write([]byte{0, 0, 0, 0, 0, 0, 0, 7})
+}
+
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
@@ -15,9 +20,16 @@ func main() {
 		fmt.Println("Failed to bind to port 9092")
 		os.Exit(1)
 	}
-	_, err = l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	defer l.Close()
+	for {
+
+		conn, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+		// send a message to the client
+		go handleConnection(conn)
 	}
+
 }
