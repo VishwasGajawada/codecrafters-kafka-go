@@ -8,7 +8,23 @@ import (
 
 func handleConnection(connection net.Conn) {
 	defer connection.Close()
-	connection.Write([]byte{0, 0, 0, 0, 0, 0, 0, 7})
+
+	buffer := make([]byte, 1024)
+	_, err := connection.Read(buffer)
+	if err != nil {
+		fmt.Println("Error reading from connection: ", err.Error())
+		os.Exit(1)
+	}
+
+	correlationID_bytes := buffer[8:12]
+
+	response := make([]byte, 8)              // 4 bytes message, 4 bytes correlation ID
+	copy(response[0:4], []byte{0, 0, 0, 0})  // Placeholder for message
+	copy(response[4:8], correlationID_bytes) // Copy correlation ID
+
+	// Simulate processing the request
+	connection.Write(response)
+
 }
 
 func main() {
